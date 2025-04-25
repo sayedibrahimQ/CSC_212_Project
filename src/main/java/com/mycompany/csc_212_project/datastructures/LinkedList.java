@@ -2,19 +2,19 @@ package com.mycompany.csc_212_project.datastructures;
 
 public class LinkedList<T> {
 
-    private Node<T> head;
-    private Node<T> current;
-    private int size;
-
-    private static class Node<T> {
+    private class Node {
         T data;
-        Node<T> next;
+        Node next;
 
         Node(T data) {
             this.data = data;
             this.next = null;
         }
     }
+
+    private Node head;
+    private Node current;
+    private int size;
 
     public LinkedList() {
         head = null;
@@ -44,7 +44,7 @@ public class LinkedList<T> {
         if (current != null) {
             return current.data;
         }
-        return null; 
+        return null;
     }
 
     public void update(T data) {
@@ -54,12 +54,13 @@ public class LinkedList<T> {
     }
 
     public void insert(T data) {
-        Node<T> newNode = new Node<>(data);
+        Node newNode = new Node(data);
+        
         if (head == null) {
             head = newNode;
-            current = head; 
+            current = head;
         } else {
-            Node<T> temp = head;
+            Node temp = head;
             while (temp.next != null) {
                 temp = temp.next;
             }
@@ -70,35 +71,33 @@ public class LinkedList<T> {
 
     public void remove() {
         if (current == null || head == null) {
-            return; 
+            return;
         }
 
         if (current == head) {
             head = head.next;
-             if (head == null) {
+            if (head == null) {
                 current = null;
             } else {
-                current = head; 
+                current = head;
             }
             size--;
             return;
         }
 
-        Node<T> previous = head;
-        while (previous != null && previous.next != current) {
-            previous = previous.next;
+        Node prev = head;
+        while (prev != null && prev.next != current) {
+            prev = prev.next;
         }
 
-        if (previous != null) {
-            previous.next = current.next; 
-            current = previous.next; 
-             size--;
+        if (prev != null) {
+            prev.next = current.next;
+            current = prev.next;
+            size--;
         }
     }
-
 
     public int size() {
         return size;
     }
-
 }

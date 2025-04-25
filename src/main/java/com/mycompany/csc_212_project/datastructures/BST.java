@@ -1,22 +1,22 @@
 package com.mycompany.csc_212_project.datastructures;
 
-public class BST<K extends Comparable<K>, T> {
+public class BST<K, V> {
 
-    private BSTNode<K, T> root;
-    private BSTNode<K, T> current; 
-    private int size;
-
-    private static class BSTNode<K extends Comparable<K>, T> {
+    private class BSTNode {
         K key;
-        T data;
-        BSTNode<K, T> left, right;
+        V value;
+        BSTNode left, right;
 
-        BSTNode(K key, T data) {
+        BSTNode(K key, V value) {
             this.key = key;
-            this.data = data;
+            this.value = value;
             left = right = null;
         }
     }
+
+    private BSTNode root;
+    private BSTNode current;
+    private int size;
 
     public BST() {
         root = null;
@@ -32,50 +32,49 @@ public class BST<K extends Comparable<K>, T> {
         return size;
     }
 
-
     public boolean findKey(K key) {
-        BSTNode<K, T> p = root;
-        current = null; 
+        BSTNode p = root;
+        current = null;
 
         while (p != null) {
-            int comparison = key.compareTo(p.key);
+            int comparison = compare(key, p.key);
             if (comparison == 0) {
-                current = p; 
+                current = p;
                 return true;
             } else if (comparison < 0) {
-                p = p.left; 
+                p = p.left;
             } else {
                 p = p.right;
             }
         }
-        return false; 
+        return false;
     }
 
-    public T retrieve() {
+    public V retrieve() {
         if (current != null) {
-            return current.data;
+            return current.value;
         }
-        return null; 
+        return null;
     }
 
-    public boolean insert(K key, T data) {
+    public boolean insert(K key, V value) {
         if (root == null) {
-            root = new BSTNode<>(key, data);
-            current = root; 
+            root = new BSTNode(key, value);
+            current = root;
             size++;
             return true;
         }
 
-        BSTNode<K, T> p = root;
-        BSTNode<K, T> q = null; 
+        BSTNode p = root;
+        BSTNode q = null;
 
         while (p != null) {
             q = p;
-            int comparison = key.compareTo(p.key);
+            int comparison = compare(key, p.key);
             if (comparison == 0) {
-                 p.data = data; 
-                 current = p; 
-                 return false; 
+                p.value = value; // Update existing value
+                current = p;
+                return false; // No new node added
             } else if (comparison < 0) {
                 p = p.left;
             } else {
@@ -83,73 +82,90 @@ public class BST<K extends Comparable<K>, T> {
             }
         }
 
-        BSTNode<K, T> newNode = new BSTNode<>(key, data);
-        if (key.compareTo(q.key) < 0) {
+        BSTNode newNode = new BSTNode(key, value);
+        if (compare(key, q.key) < 0) {
             q.left = newNode;
         } else {
             q.right = newNode;
         }
-        current = newNode; 
+        current = newNode;
         size++;
-        return true; 
+        return true;
     }
 
     public boolean removeKey(K key) {
-        if (root == null) {
-            return false; 
-        }
-
-        Wrapper removed = new Wrapper(false); 
+        // Use a recursive helper method
+        boolean[] removed = new boolean[1];
         root = removeRecursive(root, key, removed);
-
-        if(removed.value){
-            size--; 
-            current = null; 
+        
+        if (removed[0]) {
+            size--;
+            current = null; // Reset current after deletion
         }
-        return removed.value;
+        
+        return removed[0];
     }
 
-    private static class Wrapper{
-        boolean value;
-        Wrapper(boolean v){ value = v;}
-    }
-
-
-    private BSTNode<K, T> removeRecursive(BSTNode<K, T> node, K key, Wrapper removed) {
+    private BSTNode removeRecursive(BSTNode node, K key, boolean[] removed) {
         if (node == null) {
-            return null; 
+            return null;
         }
 
-        int comparison = key.compareTo(node.key);
+        int comparison = compare(key, node.key);
 
         if (comparison < 0) {
             node.left = removeRecursive(node.left, key, removed);
         } else if (comparison > 0) {
             node.right = removeRecursive(node.right, key, removed);
         } else {
-            removed.value = true; 
+            // Found the node to delete
+            removed[0] = true;
 
+            // Case 1: Node has no children (leaf)
             if (node.left == null && node.right == null) {
                 return null;
-            else if (node.left == null) {
-                return node.right; 
-            } else if (node.right == null) {
-                return node.left; 
             }
+            // Case 2: Node has only one child
+            else if (node.left == null) {
+                return node.right;
+            } else if (node.right == null) {
+                return node.left;
+            }
+            // Case 3: Node has two children
             else {
-                BSTNode<K, T> successor = findMin(node.right);
+                // Find smallest value in right subtree
+                BSTNode successor = findMin(node.right);
+                // Copy successor's data to this node
                 node.key = successor.key;
-                node.data = successor.data;
-                node.right = removeRecursive(node.right, successor.key, new Wrapper(false)); 
+                node.value = successor.value;
+                // Delete the successor
+                node.right = removeRecursive(node.right, successor.key, new boolean[1]);
             }
         }
-        return node; 
+        return node;
     }
 
-    private BSTNode<K, T> findMin(BSTNode<K, T> node) {
+    private BSTNode findMin(BSTNode node) {
         while (node.left != null) {
             node = node.left;
         }
         return node;
+    }
+
+    // Helper method to compare keys
+    @SuppressWarnings("unchecked")
+    private int compare(K key1, K key2) {
+        // Handle String comparison specially
+        if (key1 instanceof String && key2 instanceof String) {
+            return ((String)key1).compareToIgnoreCase((String)key2);
+        }
+        
+        // For other types that might implement Comparable
+        if (key1 instanceof Comparable) {
+            return ((Comparable<K>)key1).compareTo(key2);
+        }
+        
+        // Fallback for non-Comparable types - use hashCode
+        return Integer.compare(key1.hashCode(), key2.hashCode());
     }
 }
