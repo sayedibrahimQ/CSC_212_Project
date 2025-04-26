@@ -1,174 +1,116 @@
 package com.mycompany.csc_212_project;
 
 import com.mycompany.csc_212_project.datastructures.LinkedList;
-import com.mycompany.csc_212_project.datastructures.BST;
-import java.io.File;
 
-public class InvIndexPhotoManager {
-    private BST<String, LinkedList<Photo>> invertedIndex;
-    private LinkedList<Photo> allPhotosList;
+public class Test {
 
-    public InvIndexPhotoManager() {
-        this.invertedIndex = new BST<>();
-        this.allPhotosList = new LinkedList<>();
+    // Converts comma-separated tags into LinkedList
+    private static LinkedList<String> toTagsLinkedList(String tags) {
+        LinkedList<String> result = new LinkedList<>();
+        if (tags != null && !tags.trim().isEmpty()) {
+            String[] tagsArray = tags.split("\\s*,\\s*");
+            for (String tag : tagsArray) {
+                result.insert(tag.trim());
+            }
+        }
+        return result;
     }
 
-    // Add a photo
-    public void addPhoto(Photo p) {
-        if (p == null || photoExists(p.getPath())) {
+    // Prints a LinkedList nicely
+    public static <T> void printList(LinkedList<T> list) {
+        if (list == null || list.empty()) {
+            System.out.println("[]");
             return;
         }
 
-        allPhotosList.insert(p);
-        System.out.println("Photo added to inverted index: " + new File(p.getPath()).getName());
-
-        LinkedList<String> tags = p.getTags();
-        if (tags != null && !tags.empty()) {
-            tags.findFirst();
-            while (!tags.last()) {
-                String tag = tags.retrieve();
-                updateIndexForAddition(tag, p);
-                tags.findNext();
-            }
-            // Process the last tag
-            updateIndexForAddition(tags.retrieve(), p);
-        }
-    }
-
-    // Helper method to update the inverted index when adding a photo
-    private void updateIndexForAddition(String tag, Photo photo) {
-        boolean found = invertedIndex.findkey(tag);
-
-        if (found) {
-            // Tag exists, add the photo to its list
-            LinkedList<Photo> photoList = invertedIndex.retrieve();
-            if (!listContainsPhoto(photoList, photo.getPath())) {
-                photoList.insert(photo);
-            }
-        } else {
-            // Tag doesn not exist, create a new list and add to BST
-            LinkedList<Photo> newPhotoList = new LinkedList<>();
-            newPhotoList.insert(photo);
-            invertedIndex.insert(tag, newPhotoList);
-        }
-    }
-    
-    // Searches for a photo by its path in the linked list
-    private Photo findPhotoByPath(String path) {
-        if (allPhotosList.isEmpty()) return null;
-        
-        allPhotosList.goToFirst();
-        while (!allPhotosList.isLast()) {
-            Photo p = allPhotosList.getData();
-            if (p.getPath().equals(path)) {
-                return p;
-            }
-            allPhotosList.goToNext();
-        }
-        
-        Photo lastPhoto = allPhotosList.getData();
-        if (lastPhoto.getPath().equals(path)) {
-            return lastPhoto;
-        }
-        
-        return null;
-    }
-
-    // Delete a photo
-    public void deletePhoto(String path) {
-        Photo photoToRemove = findPhotoByPath(path);
-
-        if (photoToRemove != null) {
-            //  Remove from main list
-            removePhotoFromList(allPhotosList, path);
-
-            // Remove from inverted index
-            LinkedList<String> tags = photoToRemove.getTags();
-            if (tags != null && !tags.empty()) {
-                tags.findFirst();
-                while (!tags.last()) {
-                    String tag = tags.retrieve();
-                    updateIndexForDeletion(tag, path);
-                    tags.findNext();
-                }
-                // Process the last tag
-                updateIndexForDeletion(tags.retrieve(), path);
-            }
-            
-            System.out.println("Photo deleted from inverted index: " + new File(path).getName());
-        }
-    }
-
-    // Helper method to update the index when deleting a photo
-    private void updateIndexForDeletion(String tag, String photoPath) {
-        boolean found = invertedIndex.findkey(tag);
-        if (found) {
-            LinkedList<Photo> photoList = invertedIndex.retrieve();
-            removePhotoFromList(photoList, photoPath);
-
-            // If the photo list for this tag is now empty, remove the tag from the index
-            if (photoList.empty()) {
-                invertedIndex.removeKey(tag);
-            }
-        }
-    }
-
-    // Helper method to remove a photo from a list
-    private void removePhotoFromList(LinkedList<Photo> list, String path) {
-        if (list.empty()) return;
-        
+        System.out.print("[");
         list.findFirst();
         while (!list.last()) {
-            if (list.retrieve().getPath().equals(path)) {
-                list.remove();
-                return;
-            }
+            System.out.print(list.retrieve() + ", ");
             list.findNext();
         }
-        
-        // Check the last element
-        if (list.retrieve().getPath().equals(path)) {
-            list.remove();
-        }
+        System.out.print(list.retrieve());
+        System.out.println("]");
     }
 
-    // Helper method to check if a list contains a photo
-    private boolean listContainsPhoto(LinkedList<Photo> list, String path) {
-        if (list.empty()) return false;
-        
-        list.findFirst();
-        while (!list.last()) {
-            if (list.retrieve().getPath().equals(path)) {
-                return true;
-            }
-            list.findNext();
+    // Prints photo paths
+    private static void printPhotoPaths(LinkedList<Photo> photos) {
+        if (photos.empty()) {
+            System.out.println("[]");
+            return;
         }
-        
-        return list.retrieve().getPath().equals(path);
+
+        System.out.print("[");
+        photos.findFirst();
+        while (!photos.last()) {
+            System.out.print(photos.retrieve().getPath() + ", ");
+            photos.findNext();
+        }
+        System.out.print(photos.retrieve().getPath());
+        System.out.println("]");
     }
 
-    // Helper method to check if a photo exists
-    private boolean photoExists(String path) {
-        return findPhotoByPath(path) != null;
-    }
+    public static void main(String[] args) {
 
-    // Return the inverted index
-    public BST<String, LinkedList<Photo>> getPhotos() {
-        return invertedIndex;
-    }
-    
-    // Get all photos (for compatibility with PhotoManager)
-    public LinkedList<Photo> getAllPhotos() {
-        return allPhotosList;
-    }
-    
-    // Find photos by tag - more efficient than using Album
-    public LinkedList<Photo> findPhotosByTag(String tag) {
-        boolean found = invertedIndex.findkey(tag);
-        if (found) {
-            return invertedIndex.retrieve();
-        } else {
-            return new LinkedList<Photo>(); // Empty list
-        }
+        // === Using PhotoManager (Before Optimization) ===
+        System.out.println("\n===== Using PhotoManager =====");
+        PhotoManager manager = new PhotoManager();
+
+        Photo photo1 = new Photo("hedgehog.jpg", toTagsLinkedList("animal, hedgehog, grass"));
+        Photo photo2 = new Photo("bear.jpg", toTagsLinkedList("animal, bear, grass"));
+        Photo photo3 = new Photo("butterfly.jpg", toTagsLinkedList("insect, butterfly, flower"));
+        Photo photo4 = new Photo("panda.jpg", toTagsLinkedList("animal, panda, grass"));
+        Photo photo5 = new Photo("fox.jpg", toTagsLinkedList("animal, fox, forest"));
+
+        manager.addPhoto(photo1);
+        manager.addPhoto(photo2);
+        manager.addPhoto(photo3);
+        manager.addPhoto(photo4);
+        manager.addPhoto(photo5);
+
+        System.out.println("\nAll Photos (PhotoManager):");
+        printPhotoPaths(manager.getPhotos());
+
+        // Create an Album (slow search)
+        Album album1 = new Album("Animals on Grass", "animal AND grass", manager);
+        LinkedList<Photo> albumPhotos1 = album1.getPhotos();
+        System.out.println("\nPhotos matching 'animal AND grass' (PhotoManager):");
+        printPhotoPaths(albumPhotos1);
+        System.out.println("Tag comparisons used (PhotoManager): " + album1.getNbComps());
+
+        // Delete a photo
+        System.out.println("\nDeleting 'bear.jpg' (PhotoManager)...");
+        manager.deletePhoto("bear.jpg");
+        System.out.println("All Photos after deletion (PhotoManager):");
+        printPhotoPaths(manager.getPhotos());
+
+        // === Using InvIndexPhotoManager (After Optimization) ===
+        System.out.println("\n===== Using InvIndexPhotoManager =====");
+        InvIndexPhotoManager invManager = new InvIndexPhotoManager();
+
+        invManager.addPhoto(photo1);
+        invManager.addPhoto(photo2);
+        invManager.addPhoto(photo3);
+        invManager.addPhoto(photo4);
+        invManager.addPhoto(photo5);
+
+        System.out.println("\nAll Photos (InvIndexPhotoManager):");
+        printPhotoPaths(invManager.getAllPhotos());
+
+        // Search for photos with "grass" tag (fast search)
+        LinkedList<Photo> searchResults = invManager.findPhotosByTag("grass");
+        System.out.println("\nPhotos with tag 'grass' (Using Inverted Index):");
+        printPhotoPaths(searchResults);
+
+        // Delete a photo
+        System.out.println("\nDeleting 'bear.jpg' (InvIndexPhotoManager)...");
+        invManager.deletePhoto("bear.jpg");
+        System.out.println("All Photos after deletion (InvIndexPhotoManager):");
+        printPhotoPaths(invManager.getAllPhotos());
+
+        // Search again after deletion
+        LinkedList<Photo> searchResultsAfterDelete = invManager.findPhotosByTag("grass");
+        System.out.println("\nPhotos with tag 'grass' after deletion:");
+        printPhotoPaths(searchResultsAfterDelete);
     }
 }
