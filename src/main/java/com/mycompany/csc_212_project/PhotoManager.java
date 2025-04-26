@@ -5,52 +5,58 @@ import com.mycompany.csc_212_project.datastructures.LinkedList;
 public class PhotoManager {
     private LinkedList<Photo> photos;
 
+    // Initializes a new PhotoManager with an empty linked list
     public PhotoManager() {
         this.photos = new LinkedList<>();
     }
 
+    // Returns the linked list of photos
     public LinkedList<Photo> getPhotos() {
         return photos;
     }
 
+    // Adds a photo to the list if it doesn't already exist
     public void addPhoto(Photo p) {
         if (p != null && !photoExists(p.getPath())) {
-            photos.add(p);
+            photos.insert(p);
             System.out.println("Photo added: " + p.getPath());
         } else {
             System.out.println("Photo already exists or invalid.");
         }
     }
 
+    // Deletes a photo with the specified path
     public void deletePhoto(String path) {
-        if (photos.isEmpty()) return;
+        if (photos.empty()) return;
 
-        photos.goToFirst();
-        while (!photos.isLast()) {
-            if (photos.getData().getPath().equals(path)) {
+        photos.findFirst();
+        while (!photos.last()) {
+            if (photos.retrieve().getPath().equals(path)) {
                 photos.remove();
                 System.out.println("Photo deleted: " + path);
                 return;
             }
-            photos.goToNext();
+            photos.findNext();
         }
 
-        if (photos.getData().getPath().equals(path)) {
+        // Check last photo
+        if (photos.retrieve().getPath().equals(path)) {
             photos.remove();
             System.out.println("Photo deleted: " + path);
         }
     }
 
+    // Checks if a photo with the specified path exists
     private boolean photoExists(String path) {
-        if (photos.isEmpty()) return false;
+        if (photos.empty()) return false;
 
-        photos.goToFirst();
-        while (!photos.isLast()) {
-            if (photos.getData().getPath().equals(path)) {
+        photos.findFirst();
+        while (!photos.last()) {
+            if (photos.retrieve().getPath().equals(path)) {
                 return true;
             }
-            photos.goToNext();
+            photos.findNext();
         }
-        return photos.getData().getPath().equals(path);
+        return photos.retrieve().getPath().equals(path);
     }
 }

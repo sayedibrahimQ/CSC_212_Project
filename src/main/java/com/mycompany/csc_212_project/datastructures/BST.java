@@ -2,39 +2,42 @@ package com.mycompany.csc_212_project.datastructures;
 
 public class BST<K, V> {
 
-    private class Node {
+    private class BSTNode {
         K key;
         V value;
-        Node left, right;
+        BSTNode left, right;
 
-        Node(K key, V value) {
+        BSTNode(K key, V value) {
             this.key = key;
             this.value = value;
         }
     }
 
-    private Node root;
-    private Node current;
+    private BSTNode root;
+    private BSTNode current;
     private int size;
 
+    // Initializes an empty BST
     public BST() {
         root = null;
         current = null;
         size = 0;
     }
 
-    public boolean isEmpty() {
+    // Returns true if the BST is empty
+    public boolean empty() {
         return root == null;
     }
 
-    public int getSize() {
+    // Returns the number of nodes in the BST
+    public int size() {
         return size;
     }
 
-    public boolean find(K key) {
-        Node node = root;
+    // Searches for a key and sets current to the found node
+    public boolean findkey(K key) {
+        BSTNode node = root;
         current = null;
-
         while (node != null) {
             int cmp = compare(key, node.key);
             if (cmp == 0) {
@@ -49,36 +52,34 @@ public class BST<K, V> {
         return false;
     }
 
-    public V getValue() {
+    // Retrieves the value of the current node
+    public V retrieve() {
         return current != null ? current.value : null;
     }
 
-    public boolean add(K key, V value) {
+    // Inserts a new key-value pair, returns false if key exists
+    public boolean insert(K key, V value) {
+        if (findkey(key)) {
+            return false;
+        }
+        BSTNode newNode = new BSTNode(key, value);
         if (root == null) {
-            root = new Node(key, value);
-            current = root;
+            root = newNode;
+            current = newNode;
             size++;
             return true;
         }
-
-        Node parent = null;
-        Node node = root;
-
+        BSTNode parent = null;
+        BSTNode node = root;
         while (node != null) {
             parent = node;
             int cmp = compare(key, node.key);
-            if (cmp == 0) {
-                node.value = value; 
-                current = node;
-                return false;
-            } else if (cmp < 0) {
+            if (cmp < 0) {
                 node = node.left;
             } else {
                 node = node.right;
             }
         }
-
-        Node newNode = new Node(key, value);
         if (compare(key, parent.key) < 0) {
             parent.left = newNode;
         } else {
@@ -89,7 +90,8 @@ public class BST<K, V> {
         return true;
     }
 
-    public boolean remove(K key) {
+    // Removes a node with the given key
+    public boolean removeKey(K key) {
         boolean[] removed = new boolean[1];
         root = removeNode(root, key, removed);
         if (removed[0]) {
@@ -99,20 +101,18 @@ public class BST<K, V> {
         return removed[0];
     }
 
-    private Node removeNode(Node node, K key, boolean[] removed) {
+    // Recursively removes a node and updates the tree
+    private BSTNode removeNode(BSTNode node, K key, boolean[] removed) {
         if (node == null) {
             return null;
         }
-
         int cmp = compare(key, node.key);
-
         if (cmp < 0) {
             node.left = removeNode(node.left, key, removed);
         } else if (cmp > 0) {
             node.right = removeNode(node.right, key, removed);
         } else {
             removed[0] = true;
-
             if (node.left == null && node.right == null) {
                 return null;
             }
@@ -122,7 +122,7 @@ public class BST<K, V> {
             if (node.right == null) {
                 return node.left;
             }
-            Node smallest = findSmallest(node.right);
+            BSTNode smallest = findSmallest(node.right);
             node.key = smallest.key;
             node.value = smallest.value;
             node.right = removeNode(node.right, smallest.key, new boolean[1]);
@@ -130,13 +130,15 @@ public class BST<K, V> {
         return node;
     }
 
-    private Node findSmallest(Node node) {
+    // Finds the node with the smallest key in a subtree
+    private BSTNode findSmallest(BSTNode node) {
         while (node.left != null) {
             node = node.left;
         }
         return node;
     }
 
+    // Compares two keys, supports strings and comparables
     private int compare(K key1, K key2) {
         if (key1 instanceof String && key2 instanceof String) {
             return ((String)key1).compareToIgnoreCase((String)key2);
@@ -146,4 +148,4 @@ public class BST<K, V> {
         }
         return Integer.compare(key1.hashCode(), key2.hashCode());
     }
-}   
+}
