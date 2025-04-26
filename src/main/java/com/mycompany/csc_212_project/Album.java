@@ -10,17 +10,15 @@ public class Album {
 
     public Album(String name, String condition, PhotoManager manager) {
         this.name = name;
-        this.condition = condition;
+        this.condition = condition; 
         this.manager = manager;
-        this.nbComps = 0; 
+        this.nbComps = 0;
     }
 
-   
     public String getName() {
         return name;
     }
 
-    
     public String getCondition() {
         return condition;
     }
@@ -36,25 +34,25 @@ public class Album {
 
         String[] requiredTags = {};
         if (condition != null && !condition.trim().isEmpty()) {
-            requiredTags = condition.split("\\s*AND\\s*");
+            requiredTags = condition.split("\\s*(AND|and)\\s*"); 
         }
 
-        if (allPhotos == null || allPhotos.empty()) {
+        if (allPhotos == null || allPhotos.isEmpty()) {
             return resultPhotos; 
         }
 
-        allPhotos.findFirst();
-        while (!allPhotos.last()) {
-            Photo currentPhoto = allPhotos.retrieve();
+        allPhotos.goToFirst();
+        while (!allPhotos.isLast()) {
+            Photo currentPhoto = allPhotos.getData();
             if (matchesCondition(currentPhoto, requiredTags)) {
-                resultPhotos.insert(currentPhoto);
+                resultPhotos.add(currentPhoto);
             }
-            allPhotos.findNext();
+            allPhotos.goToNext();
         }
         
-        Photo lastPhoto = allPhotos.retrieve();
+        Photo lastPhoto = allPhotos.getData();
         if (matchesCondition(lastPhoto, requiredTags)) {
-            resultPhotos.insert(lastPhoto);
+            resultPhotos.add(lastPhoto);
         }
 
         return resultPhotos;
@@ -66,25 +64,25 @@ public class Album {
         }
 
         LinkedList<String> photoTags = photo.getTags();
-        if (photoTags == null || photoTags.empty()) {
+        if (photoTags == null || photoTags.isEmpty()) {
             return false; 
         }
 
         for (String reqTag : requiredTags) {
             boolean foundTag = false;
-            photoTags.findFirst();
-            while (!photoTags.last()) {
+            photoTags.goToFirst();
+            while (!photoTags.isLast()) {
                 nbComps++; 
-                if (photoTags.retrieve().equalsIgnoreCase(reqTag.trim())) {
+                if (photoTags.getData().equalsIgnoreCase(reqTag.trim())) {
                     foundTag = true;
-                    break;
+                    break; 
                 }
-                photoTags.findNext();
+                photoTags.goToNext();
             }
             
-            if (!foundTag && !photoTags.empty()) {
+            if (!foundTag && !photoTags.isEmpty()) {
                 nbComps++;
-                if (photoTags.retrieve().equalsIgnoreCase(reqTag.trim())) {
+                if (photoTags.getData().equalsIgnoreCase(reqTag.trim())) {
                     foundTag = true;
                 }
             }

@@ -22,40 +22,37 @@ public class LinkedList<T> {
         size = 0;
     }
 
-    public boolean empty() {
+    public boolean isEmpty() {
         return head == null;
     }
 
-    public boolean last() {
+    public boolean isLast() {
         return current == null || current.next == null;
     }
 
-    public void findFirst() {
+    public void goToFirst() {
         current = head;
     }
 
-    public void findNext() {
+    public void goToNext() {
         if (current != null) {
             current = current.next;
         }
     }
 
-    public T retrieve() {
-        if (current != null) {
-            return current.data;
-        }
-        return null;
+    public T getData() {
+        return current != null ? current.data : null;
     }
 
-    public void update(T data) {
+    public void setData(T data) {
         if (current != null) {
             current.data = data;
         }
     }
 
-    public void insert(T data) {
+    public void add(T data) {
         Node newNode = new Node(data);
-        
+
         if (head == null) {
             head = newNode;
             current = head;
@@ -76,11 +73,7 @@ public class LinkedList<T> {
 
         if (current == head) {
             head = head.next;
-            if (head == null) {
-                current = null;
-            } else {
-                current = head;
-            }
+            current = head; 
             size--;
             return;
         }
@@ -92,12 +85,12 @@ public class LinkedList<T> {
 
         if (prev != null) {
             prev.next = current.next;
-            current = prev.next;
+            current = prev.next; 
             size--;
         }
     }
 
-    public int size() {
+    public int getSize() {
         return size;
     }
 }

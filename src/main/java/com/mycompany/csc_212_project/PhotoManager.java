@@ -15,53 +15,42 @@ public class PhotoManager {
 
     public void addPhoto(Photo p) {
         if (p != null && !photoExists(p.getPath())) {
-            photos.insert(p);
-            System.out.println("Photo added to manager: " + new java.io.File(p.getPath()).getName());
+            photos.add(p);
+            System.out.println("Photo added: " + p.getPath());
+        } else {
+            System.out.println("Photo already exists or invalid.");
         }
     }
 
     public void deletePhoto(String path) {
-        if (photos.empty()) return;
-        
-        photos.findFirst();
-        while (!photos.last()) {
-            if (photos.retrieve().getPath().equals(path)) {
-                System.out.println("Photo deleted from manager: " + new java.io.File(path).getName());
+        if (photos.isEmpty()) return;
+
+        photos.goToFirst();
+        while (!photos.isLast()) {
+            if (photos.getData().getPath().equals(path)) {
                 photos.remove();
+                System.out.println("Photo deleted: " + path);
                 return;
             }
-            photos.findNext();
+            photos.goToNext();
         }
-        
-        if (photos.retrieve().getPath().equals(path)) {
-            System.out.println("Photo deleted from manager: " + new java.io.File(path).getName());
+
+        if (photos.getData().getPath().equals(path)) {
             photos.remove();
+            System.out.println("Photo deleted: " + path);
         }
     }
 
     private boolean photoExists(String path) {
-        if (photos.empty()) return false;
-        
-        photos.findFirst();
-        while (!photos.last()) {
-            if (photos.retrieve().getPath().equals(path)) {
+        if (photos.isEmpty()) return false;
+
+        photos.goToFirst();
+        while (!photos.isLast()) {
+            if (photos.getData().getPath().equals(path)) {
                 return true;
             }
-            photos.findNext();
+            photos.goToNext();
         }
-        
-        return photos.retrieve().getPath().equals(path);
-    }
-    
-    public int count() {
-        int count = 0;
-        if (photos.empty()) return count;
-        
-        photos.findFirst();
-        while (!photos.last()) {
-            count++;
-            photos.findNext();
-        }
-        return count + 1; 
+        return photos.getData().getPath().equals(path);
     }
 }
