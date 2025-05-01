@@ -35,7 +35,7 @@ public class InvIndexPhotoManager {
 
     // Update index for a new tag
     private void updateIndexForAddition(String tag, Photo photo) {
-        boolean found = invertedIndex.findkey(tag);
+        boolean found = invertedIndex.findKey(tag);
         if (found) {
             LinkedList<Photo> photoList = invertedIndex.retrieve();
             if (!listContainsPhoto(photoList, photo.getPath())) {
@@ -72,7 +72,7 @@ public class InvIndexPhotoManager {
 
     // Update index after photo deletion
     private void updateIndexForDeletion(String tag, String photoPath) {
-        boolean found = invertedIndex.findkey(tag);
+        boolean found = invertedIndex.findKey(tag);
         if (found) {
             LinkedList<Photo> photoList = invertedIndex.retrieve();
             removePhotoFromList(photoList, photoPath);
@@ -141,7 +141,7 @@ public class InvIndexPhotoManager {
     }
 
     public LinkedList<Photo> findPhotosByTag(String tag) {
-        boolean found = invertedIndex.findkey(tag);
+        boolean found = invertedIndex.findKey(tag);
         return found ? invertedIndex.retrieve() : new LinkedList<>();
     }
 }

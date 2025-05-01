@@ -1,7 +1,8 @@
 package com.mycompany.csc_212_project.datastructures;
 
-public class BST<K, V> {
 
+
+public class BST<K extends Comparable<K>, V> {
     private class BSTNode {
         K key;
         V value;
@@ -13,139 +14,107 @@ public class BST<K, V> {
         }
     }
 
-    private BSTNode root;
-    private BSTNode current;
-    private int size;
+    private BSTNode root, current;
 
-    // Initializes an empty BST
     public BST() {
-        root = null;
-        current = null;
-        size = 0;
+        root = current = null;
     }
 
-    // Returns true if the BST is empty
     public boolean empty() {
         return root == null;
     }
 
-    // Returns the number of nodes in the BST
-    public int size() {
-        return size;
-    }
-
-    // Searches for a key and sets current to the found node
-    public boolean findkey(K key) {
-        BSTNode node = root;
-        current = null;
-        while (node != null) {
-            int cmp = compare(key, node.key);
-            if (cmp == 0) {
-                current = node;
-                return true;
-            } else if (cmp < 0) {
-                node = node.left;
-            } else {
-                node = node.right;
-            }
-        }
+    public boolean full() {
         return false;
     }
 
-    // Retrieves the value of the current node
     public V retrieve() {
         return current != null ? current.value : null;
     }
 
-    // Inserts a new key-value pair, returns false if key exists
-    public boolean insert(K key, V value) {
-        if (findkey(key)) {
+    public boolean update(K key, V value) {
+        removeKey(key);
+        return insert(key, value);
+    }
+
+    public boolean findKey(K tkey) {
+        BSTNode p = root, q = root;
+        if (empty()) return false;
+
+        while (p != null) {
+            q = p;
+            int cmp = tkey.compareTo(p.key);
+            if (cmp == 0) {
+                current = p;
+                return true;
+            } else if (cmp < 0) {
+                p = p.left;
+            } else {
+                p = p.right;
+            }
+        }
+
+        current = q;
+        return false;
+    }
+
+    public boolean insert(K k, V val) {
+        BSTNode p, q = current;
+        if (findKey(k)) {
+            current = q;
             return false;
         }
-        BSTNode newNode = new BSTNode(key, value);
-        if (root == null) {
-            root = newNode;
-            current = newNode;
-            size++;
+
+        p = new BSTNode(k, val);
+        if (empty()) {
+            root = current = p;
+            return true;
+        } else {
+            if (k.compareTo(current.key) < 0)
+                current.left = p;
+            else
+                current.right = p;
+            current = p;
             return true;
         }
-        BSTNode parent = null;
-        BSTNode node = root;
-        while (node != null) {
-            parent = node;
-            int cmp = compare(key, node.key);
-            if (cmp < 0) {
-                node = node.left;
-            } else {
-                node = node.right;
-            }
-        }
-        if (compare(key, parent.key) < 0) {
-            parent.left = newNode;
-        } else {
-            parent.right = newNode;
-        }
-        current = newNode;
-        size++;
-        return true;
     }
 
-    // Removes a node with the given key
     public boolean removeKey(K key) {
-        boolean[] removed = new boolean[1];
-        root = removeNode(root, key, removed);
-        if (removed[0]) {
-            size--;
-            current = null;
-        }
-        return removed[0];
+        BooleanWrapper flag = new BooleanWrapper(false);
+        root = removeAux(key, root, flag);
+        return flag.value;
     }
 
-    // Recursively removes a node and updates the tree
-    private BSTNode removeNode(BSTNode node, K key, boolean[] removed) {
-        if (node == null) {
-            return null;
-        }
-        int cmp = compare(key, node.key);
+    private BSTNode removeAux(K key, BSTNode p, BooleanWrapper flag) {
+        if (p == null) return null;
+
+        int cmp = key.compareTo(p.key);
         if (cmp < 0) {
-            node.left = removeNode(node.left, key, removed);
+            p.left = removeAux(key, p.left, flag);
         } else if (cmp > 0) {
-            node.right = removeNode(node.right, key, removed);
+            p.right = removeAux(key, p.right, flag);
         } else {
-            removed[0] = true;
-            if (node.left == null && node.right == null) {
-                return null;
+            flag.setValue(true);
+            if (p.left != null && p.right != null) {
+                BSTNode q = findMin(p.right);
+                p.key = q.key;
+                p.value = q.value;
+                p.right = removeAux(q.key, p.right, flag);
+            } else {
+                return (p.left != null) ? p.left : p.right;
             }
-            if (node.left == null) {
-                return node.right;
-            }
-            if (node.right == null) {
-                return node.left;
-            }
-            BSTNode smallest = findSmallest(node.right);
-            node.key = smallest.key;
-            node.value = smallest.value;
-            node.right = removeNode(node.right, smallest.key, new boolean[1]);
         }
-        return node;
+        return p;
     }
 
-    // Finds the node with the smallest key in a subtree
-    private BSTNode findSmallest(BSTNode node) {
-        while (node.left != null) {
-            node = node.left;
-        }
-        return node;
+    private BSTNode findMin(BSTNode p) {
+        while (p.left != null) p = p.left;
+        return p;
     }
 
-    // Compares two keys, supports strings and comparables
-    private int compare(K key1, K key2) {
-        if (key1 instanceof String && key2 instanceof String) {
-            return ((String)key1).compareToIgnoreCase((String)key2);
-        }
-        if (key1 instanceof Comparable) {
-            return ((Comparable<K>)key1).compareTo(key2);
-        }
-        return Integer.compare(key1.hashCode(), key2.hashCode());
+    private static class BooleanWrapper {
+        boolean value;
+        BooleanWrapper(boolean val) { this.value = val; }
+        void setValue(boolean val) { this.value = val; }
     }
 }
